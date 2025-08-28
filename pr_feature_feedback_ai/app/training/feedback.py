@@ -1,0 +1,24 @@
+from typing import Dict, Any
+import os, csv, datetime
+
+LABELS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "labels.csv")
+
+FIELDNAMES = [
+    "ts","mode","city","state","property_type","built_area_m2","land_area_m2",
+    "ceiling_height_m","energy_capacity_kva","dock_doors",
+    "rent_pm2_pred_hedonic","sale_pm2_pred_hedonic",
+    "rent_pm2_target_user","sale_pm2_target_user",
+    "label"
+]
+
+def save_feedback(rec: Dict[str, Any]) -> None:
+    os.makedirs(os.path.dirname(LABELS_PATH), exist_ok=True)
+    write_header = not os.path.exists(LABELS_PATH)
+    # keep only known fields
+    row = {k: rec.get(k) for k in FIELDNAMES}
+    row["ts"] = datetime.datetime.utcnow().isoformat()
+    with open(LABELS_PATH, "a", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        if write_header:
+            w.writeheader()
+        w.writerow(row)
